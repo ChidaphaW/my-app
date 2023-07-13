@@ -1,26 +1,50 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { BrowserRouter } from 'react-router-dom';
+import Routes from './routes';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-function App() {
+const Theme = createTheme({
+  typography: {
+    fontFamily: "Roboto",
+  },
+});
+
+const queryClient = new QueryClient();
+
+const App = () => {
+
+  const isInitial = useRef(false);
+  useEffect(() => {
+    if(!isInitial.current){
+      queryClient.setDefaultOptions({
+        queries:{
+          cacheTime:2*60*1000,
+          staleTime:30*1000,
+          refetchOnWindowFocus:false,
+          refetchOnReconnect:false,
+          retry:1,
+        },
+        mutations:{
+          retry:0,
+        }
+      })
+    }
+  })
+ 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <ThemeProvider theme={Theme}>
+        <Routes />
+        <ReactQueryDevtools initialIsOpen={true}></ReactQueryDevtools>
+      </ThemeProvider>
+    </BrowserRouter>
+    </QueryClientProvider>
+    
   );
-}
+};
 
 export default App;
